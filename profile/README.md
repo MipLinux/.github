@@ -90,10 +90,6 @@ flowchart LR
 | D7 | 「可变」指滚动更新 | 交付形态是装机发行版，因此安装器是必需组件，不是可选附件 |
 | D8 | NVIDIA 覆盖 Turing 及更新架构 | NVIDIA 590 起主线包切换到 Open Kernel Modules，Pascal 及更老架构已不受支持 |
 
-> **D4 与 D5 是同一个决定的两面。** `nvidia-open` 的依赖里有 `linux` 这个字面量 ——
-> 一旦使用非官方内核，它就立刻不可安装。所以「不挂第三方源」和「用官方内核」
-> 不是两个偏好，是一条约束推导出的两个结论。
-
 完整的推导过程、实测数据与被否决的方案，在项目仓库的 `docs/knowledge/04-架构决策.md`。
 
 ---
@@ -150,9 +146,7 @@ MipLinux 把「中文环境」当作一等公民，而不是一个可选的语�
 
 ## 参与
 
-项目目前由两人协作，一位使用 CachyOS，一位使用 Fedora。
-
-**宿主发行版与项目无关** —— 构建环境由 `systemd-nspawn` 提供，容器内是纯 Arch；测试环境是 QEMU。两人唯一需要保持一致的接口是**包清单文件**。
+项目目前由三人协作，一位使用 CachyOS，一位使用 Arch，一位使用 Fedora。
 
 如果你对中文 Linux 桌面环境有想法，或者想帮忙测试 NVIDIA 硬件兼容性，欢迎通过 Issue 联系。开始之前请先读 [CONTRIBUTING.md](https://github.com/MipLinux/.github/blob/main/CONTRIBUTING.md)。
 
