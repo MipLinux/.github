@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 🔒 报告安全漏洞
+    url: https://github.com/MipLinux/.github/blob/main/SECURITY.md
+    about: 请不要在公开 Issue 中披露安全问题，请走私下报告通道。
+  - name: 💬 先读项目文档
+    url: https://github.com/MipLinux/.github
+    about: 构建流程、环境要求与协作约定在这份说明里，可能已经回答了你的问题。
