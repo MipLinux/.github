@@ -12,10 +12,10 @@ Arch Linux 本身很好，但对中文用户来说，从「装完系统」到「
 
 | 装完 Arch 之后，你通常还要 | 我们打算怎么做 | 当前 |
 |---|---|---|
-| 换国内镜像源，否则下载慢到不可用 | 默认国内源，**并且装完的系统会继承** | 🚧 已并入主线；装后系统的继承待解 |
-| 装中文字体，还要手调 `fontconfig` 的 CJK fallback | 字体层默认配好，中英混排不乱字重 | 🚧 规则已落地，字体包待补 |
-| 装输入法，处理 Wayland 下的环境变量与自启动 | `fcitx5` + RIME 默认可用 | 🚧 环境变量已就位，包未进清单 |
-| 预生成 `zh_CN.UTF-8`、设时区、配键盘 | 本地化层默认到位 | 🚧 配置已并入主线，待装后验证 |
+| 换国内镜像源，否则下载慢到不可用 | 默认国内源，**并且装完的系统会继承** | ✒️ 测试中 |
+| 装中文字体，还要手调 `fontconfig` 的 CJK fallback | 字体层默认配好，中英混排不乱字重 | 🚧 开发中 |
+| 装输入法，处理 Wayland 下的环境变量与自启动 | `fcitx5` + RIME 默认可用 | 未开始 |
+| 预生成 `zh_CN.UTF-8`、设时区、配键盘 | 本地化层默认到位 | 未开始 |
 | 自己装 NVIDIA 驱动，还要处理内核绑定 | 安装介质自带 `nvidia-open`，开箱可用 | 未开始 |
 | 遇到问题找不到中文资料 | 随系统提供中文上手文档 | 未开始 |
 
@@ -29,14 +29,10 @@ Arch Linux 本身很好，但对中文用户来说，从「装完系统」到「
 
 ## 现状
 
-> **项目处于早期阶段，尚未对外发布。**
+> **项目处于基线阶段。**
 >
-> 构建链路已经跑通：[archiso](https://gitlab.archlinux.org/archlinux/archiso) 官方 `releng` profile
-> 已搬进项目仓库并定名为 MipLinux，产物是可引导的 `miplinux-*.iso`。
-> 中文环境的第一批配置层（国内源、`zh_CN.UTF-8`、CJK fallback 规则、终端）也已并入主线。
->
-> 让它真正成为 MipLinux 的其余部分 —— NVIDIA 驱动、字体与输入法**包**、安装程序、品牌化 ——
-> **尚未进入主线**。
+> 已跑通 [archiso](https://gitlab.archlinux.org/archlinux/archiso) 官方 `releng` profile 的完整构建链路，产出可引导的基线 ISO。
+> 上面那些让它真正成为 MipLinux 的特性 —— NVIDIA 驱动、中文各层、安装程序、品牌化 —— **尚未进入主线**。
 >
 > 本文档描述的是已经定下来的技术决策与实现路径，不是已交付的功能。
 
@@ -92,8 +88,7 @@ flowchart LR
 | D5 | 不挂载任何第三方软件源 | 构建确定性；不依赖其它发行版的仓库 |
 | D6 | Live 环境与装后系统共用同一份包清单 | 防止两者行为不一致 |
 | D7 | 「可变」指滚动更新 | 交付形态是装机发行版，因此安装器是必需组件，不是可选附件 |
-| D8 | NVIDIA 覆盖 Turing 及更新架构 | NVIDIA 590 起主线包切换到 Open Kernel Modules，Pascal 及更老架构已不受支持；两位长期开发者的显卡也在此范围内 |
-| D9 | 发行版身份定为 **MipLinux**（`iso_name=miplinux`、卷标 `MIPLINUX_<YYYYMM>`） | 引导项用的是构建时生成的 UUID，不是卷标，所以改名不需要动引导配置 |
+| D8 | NVIDIA 覆盖 Turing 及更新架构 | NVIDIA 590 起主线包切换到 Open Kernel Modules，Pascal 及更老架构已不受支持 |
 
 完整的推导过程、实测数据与被否决的方案，在项目仓库的 `docs/knowledge/04-架构决策.md`。
 
@@ -103,9 +98,9 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-    S1["① 构建环境"] -->|已完成| S2["② 自有 profile"]
+    S1["① 构建环境"] -->|已完成| S2["② 基线 profile"]
     S2 -->|已完成| S3["③ 国内镜像源"]
-    S3 -->|已并入主线| S4["④ NVIDIA 驱动"]
+    S3 -->|验证中| S4["④ NVIDIA 驱动"]
     S4 --> S5["⑤ 中文支持五层"]
     S5 --> S6["⑥ 安装程序"]
     S6 --> S7["⑦ 品牌化"]
@@ -114,10 +109,10 @@ flowchart TD
 | 步骤 | 状态 |
 |---|---|
 | ① 建立 `systemd-nspawn` 构建环境 | ✅ 已完成 |
-| ② `releng` profile 搬进仓库，定为 MipLinux 自有 profile | ✅ 已完成 —— 产物 `miplinux-<日期>-x86_64.iso`，1.5 GiB，构建约 2 分钟，默认英文 Live 环境 |
-| ③ 替换为国内镜像源，验证构建 | 🚧 已并入主线（Live 环境生效）；**装后系统的继承仍待解决** |
+| ② 复制 `releng` profile 作为起点 | ✅ 已完成  |
+| ③ 替换为国内镜像源，验证构建 | ✒️ 测试中 |
 | ④ 加入 NVIDIA 驱动与内核参数 | 未开始 |
-| ⑤ 加入中文支持各层 | 🚧 配置层已落地（locale、fontconfig、终端）；字体与输入法的**包**待补 |
+| ⑤ 加入中文支持各层 | 未开始 |
 | ⑥ 设计并实现安装程序 | 未开始 |
 | ⑦ 品牌化 | 未开始 |
 
@@ -130,12 +125,12 @@ flowchart TD
 
 | 编号 | 待定 |
 |---|---|
+| P1 | 发行版名称是否最终定为 MipLinux |
 | P2 | 自用，还是对外发布 |
 | P3 | ISO 形态：在线安装，还是离线全量安装 |
 | P4 | Live 环境形态：全功能桌面，还是开机直弹安装器 |
 | P5 | 桌面环境选型 |
 | P6 | 安装程序方案 |
-| P9 | 发行版本号制度：产物名沿用构建日期，还是改用语义版本 |
 
 这些问题的候选方案与影响范围，在项目仓库的 `docs/knowledge/06-待定事项.md`。
 
@@ -151,7 +146,7 @@ MipLinux 把「中文环境」当作一等公民，而不是一个可选的语�
 
 ## 参与
 
-项目目前由**两位长期开发者**维护，一位使用 CachyOS，一位使用 Arch。
+项目目前由三人协作，一位使用 CachyOS，一位使用 Arch，一位使用 Fedora。
 
 如果你对中文 Linux 桌面环境有想法，或者想帮忙测试 NVIDIA 硬件兼容性，欢迎通过 Issue 联系。开始之前请先读 [CONTRIBUTING.md](https://github.com/MipLinux/.github/blob/main/CONTRIBUTING.md)。
 
@@ -168,7 +163,7 @@ MipLinux 把「中文环境」当作一等公民，而不是一个可选的语�
 
 Rolling release. The Chinese environment — mirrors, fonts, input method, locale, documentation — ships as the default rather than as post-install chores. A second goal is NVIDIA drivers working out of the box, using `nvidia-open` against the official `linux` kernel with no third-party repositories involved.
 
-**Status:** early stage, no release yet. The build pipeline works end to end — the project's own profile (now named MipLinux) produces a bootable ISO — and the first layers of the Chinese environment (mirrors, `zh_CN.UTF-8`, CJK font fallback rules, console settings) are merged. NVIDIA drivers, font and input-method packages, the installer, and branding are **not implemented yet**.
+**Status:** baseline stage. The archiso build pipeline is working and a bootable baseline ISO is produced. The features listed above are **not implemented yet** — this project is at the stage of settled technical decisions and a concrete implementation path.
 
 Built with `mkarchiso` inside a `systemd-nspawn` container running clean Arch; verified by booting in QEMU/KVM. Architecture: x86_64.
 
