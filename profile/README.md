@@ -12,12 +12,12 @@ Arch Linux 本身很好，但对中文用户来说，从「装完系统」到「
 
 | 装完 Arch 之后，你通常还要 | 我们打算怎么做 | 当前 |
 |---|---|---|
-| 换国内镜像源，否则下载慢到不可用 | 默认国内源，**并且装完的系统会继承** | ✒️ 已并入主线，测试中；装后系统的继承待解 |
-| 装中文字体，还要手调 `fontconfig` 的 CJK fallback | 字体层默认配好，中英混排不乱字重 | 🚧 规则已落地，字体包待补 |
-| 装输入法，处理 Wayland 下的环境变量与自启动 | `fcitx5` + RIME 默认可用 | 🚧 环境变量已就位，包未进清单 |
-| 预生成 `zh_CN.UTF-8`、设时区、配键盘 | 本地化层默认到位 | ✒️ 已并入主线，待装后验证 |
-| 自己装 NVIDIA 驱动，还要处理内核绑定 | 安装介质自带 `nvidia-open`，开箱可用 | 未开始 |
-| 遇到问题找不到中文资料 | 随系统提供中文上手文档 | 未开始 |
+| 换国内镜像源，否则下载慢到不可用 | 默认国内源，**并且装完的系统会继承** | 🚧 配置已并入主线并走到「装完能从盘重启」；**装后系统的源继承与长期升级仍待验**（Issue #23） |
+| 装中文字体，还要手调 `fontconfig` 的 CJK fallback | 字体层默认配好，中英混排不乱字重 | 🚧 CJK fallback 规则与字体**包**都已在 Live 清单里；含这些包的清单上还没验到装后系统 |
+| 装输入法，处理 Wayland 下的环境变量与自启动 | `fcitx5` + RIME 默认可用 | 🚧 环境变量已就位；`fcitx5` 的**包**仍以「目标清单」形式临时放在安装器中（组织方式未定，见 P10） |
+| 预生成 `zh_CN.UTF-8`、设时区、配键盘 | 本地化层默认到位 | ✒️ Live 侧已并入主线；**装后系统半段未验** |
+| 自己装 NVIDIA 驱动，还要处理内核绑定 | 安装介质自带 `nvidia-open`，开箱可用 | 🚧 Live 清单已带 `nvidia-open` / `nvidia-utils`，**真机 Live 已验证**（RTX 5060，见下）；「装完重启后能用」那半段随安装器 M3 一起验 |
+| 遇到问题找不到中文资料 | 随系统提供中文上手文档 | ⬜ 未开始（排在发布准备，M5） |
 
 > 这是一份**设计目标**，不是已完成的功能清单。实现进度见 [现状](#现状) 与 [路线图](#路线图)。
 
@@ -33,12 +33,32 @@ Arch Linux 本身很好，但对中文用户来说，从「装完系统」到「
 >
 > 构建链路已经跑通：[archiso](https://gitlab.archlinux.org/archlinux/archiso) 官方 `releng` profile
 > 已搬进项目仓库并定名为 MipLinux，产物是可引导的 `miplinux-*.iso`。
-> 中文环境的第一批配置层（国内源、`zh_CN.UTF-8`、CJK fallback 规则、终端）也已并入主线。
+> 装系统链路也通了 —— 安装器的**骨架（M0）**与**无界面逻辑闭环（M1）**都已落地实测，
+> 分区 → 装包 → 配置 → 写引导整条链在 QEMU 里能从空盘装出一个能启动的系统。
+> Live 侧的中文配置层（国内源、`zh_CN.UTF-8`、CJK fallback 规则、终端）与 NVIDIA 驱动
+> （`nvidia-open` / `nvidia-utils`）已并入主线，**驱动有一次真机验证**（RTX 5060，Live 环境）。
 >
-> 让它真正成为 MipLinux 的其余部分 —— NVIDIA 驱动、字体与输入法**包**、安装程序、品牌化 ——
-> **尚未进入主线**。
+> 让它真正成为 MipLinux 的其余部分 —— NVIDIA 驱动的**装后系统**半段、字体与输入法的
+> **装后清单**、安装器图形界面（M2）、桌面与品牌化 —— **尚未完成**。
 >
 > 本文档描述的是已经定下来的技术决策与实现路径，不是已交付的功能。
+
+### 进度
+
+**「✅」= 在本机实测过**，不等于用户拿到的成品已经具备该能力。逐日的任务与实测记录在项目仓库的 `docs/work/`；
+每一阶段验到第几个检查点，以 `docs/knowledge/05-测试方法.md` 的六个检查点为准。
+
+| 阶段 | 状态 |
+|---|---|
+| 构建环境与基线 | ✅ 未修改的 `releng` 构建出 ISO，QEMU（UEFI）引导到 `[root@archiso ~]#` |
+| 自有 profile | ✅ `profile/` 进仓库并改名 MipLinux，产物 `miplinux-<日期>-x86_64.iso`（1.5 GiB，构建 2 分 08 秒） |
+| 装系统链路 | ✅ 安装器 M1「空盘 → 能启动的系统」跑通：QEMU 里装完能从盘重启（检查点 4），装后系统 `pacman -Syu` 成功（检查点 6） |
+| 国内源与中文本地化 | 🚧 已并入主线：国内源、`zh_CN.UTF-8`、CJK fallback 规则、终端字体，字体与输入法包已进 Live 清单；**装后系统的源继承与升级未验** |
+| NVIDIA 驱动 | 🚧 Live 清单已带驱动，**真机 Live 第一次验证通过**（RTX 5060 Max-Q，独显模式：驱动加载、`nvidia-smi` 正常、内屏点亮、`nmcli` 联网）；**装完重启后能用未验**，随 M3 走 |
+| 安装程序 | 🚧 **M0 完成**（QEMU 开机直进安装器窗口；安装器走了自动把 tty1 交回 `getty` 兜底）、**M1 完成**（无界面逻辑闭环）、**M2 进行中**（Qt6 五个页面）。技术栈见 D14 |
+| 桌面环境 / 品牌化 | ⬜ 未开始。**P5 已定 WM 路线**（不做 DE），niri / Hyprland 待真机各跑一轮 |
+
+### 选型一览
 
 | 项目 | 选型 |
 |---|---|
@@ -90,12 +110,17 @@ flowchart LR
 | D3 | 不使用宿主机 `pacman.conf` 的隐式 `Include` | 否则会静默引入宿主发行版的源 |
 | D4 | 内核使用官方 `linux` | `nvidia-open` 硬绑官方内核，可零额外工作拿到预编译模块 |
 | D5 | 不挂载任何第三方软件源 | 构建确定性；不依赖其它发行版的仓库 |
-| D6 | Live 环境与装后系统共用同一份包清单 | 防止两者行为不一致 |
+| D6 | Live 环境与装后系统共用同一份包清单 | 防止两者行为不一致 —— D11 / D12 定案后「共用一份」不再字面成立，怎么重述见 P10 |
 | D7 | 「可变」指滚动更新 | 交付形态是装机发行版，因此安装器是必需组件，不是可选附件 |
 | D8 | NVIDIA 覆盖 Turing 及更新架构 | NVIDIA 590 起主线包切换到 Open Kernel Modules，Pascal 及更老架构已不受支持；两位长期开发者的显卡也在此范围内 |
 | D9 | 发行版身份定为 **MipLinux**（`iso_name=miplinux`、卷标 `MIPLINUX_<YYYYMM>`） | 引导项用的是构建时生成的 UUID，不是卷标，所以改名不需要动引导配置 |
+| D10 | 目标范围：**对外发布** | 交付对象是任何下载这份 ISO 的中文用户 —— 签名、发布文档、升级路径、硬件覆盖、缺陷容忍度都按对外标准做 |
+| D11 | ISO 形态：**在线安装** —— ISO 只承载 Live 环境，包在安装时从国内源拉取 | ISO 小、迭代快，并把「默认国内源」从加分项变成前提；代价是**安装时必须联网**，Wi-Fi 选择与密码输入因此不能省 |
+| D12 | Live 环境：**极简 kiosk**，开机直进安装器 | 路径最短；代价是 Live 不再兼作救援盘。极简 ≠ 什么都不装 —— D11 的联网要求仍由 Live 提供 |
+| D13 | 版本号**双轨**：ISO 产物名用构建日期，语义版号（`v0.x.y`）只打在 GitHub Release | 滚动发行版里同一天重建的产物都不同，日期才是产物的真实指纹；语义号只用于对外说明进度 |
+| D14 | 安装器技术栈：Python 3 + PySide6/Qt6，Live 用 `cage` 做 kiosk 合成器，分区用 `python-pyparted`，联网用 NetworkManager + `nmcli`，装后系统用 systemd-boot | 选型全部落在官方源，不引入第三方仓库（D5）。v0.1 范围：UEFI + 整盘擦除 + ext4 单根 |
 
-完整的推导过程、实测数据与被否决的方案，在项目仓库的 `docs/knowledge/04-架构决策.md`。
+完整的推导过程、实测数据与被否决的方案，在项目仓库的 `docs/knowledge/04-架构决策.md` 与 `06-待定事项.md`。
 
 ---
 
@@ -106,7 +131,7 @@ flowchart TD
     S1["① 构建环境"] -->|已完成| S2["② 自有 profile"]
     S2 -->|已完成| S3["③ 国内镜像源"]
     S3 -->|已并入主线| S4["④ NVIDIA 驱动"]
-    S4 --> S5["⑤ 中文支持五层"]
+    S4 -->|Live 已验证| S5["⑤ 中文支持五层"]
     S5 --> S6["⑥ 安装程序"]
     S6 --> S7["⑦ 品牌化"]
 ```
@@ -114,15 +139,15 @@ flowchart TD
 | 步骤 | 状态 |
 |---|---|
 | ① 建立 `systemd-nspawn` 构建环境 | ✅ 已完成 |
-| ② `releng` profile 搬进仓库，定为 MipLinux 自有 profile | ✅ 已完成 —— 产物 `miplinux-<日期>-x86_64.iso`，1.5 GiB，构建约 2 分钟，默认英文 Live 环境 |
-| ③ 替换为国内镜像源，验证构建 | ✒️ 已并入主线，测试中；**装后系统的继承仍待解决** |
-| ④ 加入 NVIDIA 驱动与内核参数 | 未开始 |
-| ⑤ 加入中文支持各层 | 🚧 配置层已落地（locale、fontconfig、终端）；字体与输入法的**包**待补 |
-| ⑥ 设计并实现安装程序 | 未开始 |
-| ⑦ 品牌化 | 未开始 |
+| ② `releng` profile 搬进仓库，定为 MipLinux 自有 profile | ✅ 已完成 —— 产物 `miplinux-<日期>-x86_64.iso`，1.5 GiB，构建约 2 分钟 |
+| ③ 替换为国内镜像源，验证构建 | ✅ Live 侧已并入主线（换源后的 ISO 装出的系统能从盘重启）；**装后系统的源继承与长期升级仍待验**（Issue #23） |
+| ④ 加入 NVIDIA 驱动与内核参数 | 🚧 Live 半段真机验证通过（RTX 5060：驱动加载、`nvidia-smi`、内屏点亮、联网）；**装完重启后能用未验**，随安装器 M3 走 |
+| ⑤ 加入中文支持各层 | 🚧 locale / fontconfig / 终端配置与字体、输入法**包**在 Live 清单里；装后系统的清单组织（P10）与验证未完成 |
+| ⑥ 设计并实现安装程序 | 🚧 M0（骨架与兜底）与 M1（无界面逻辑闭环，检查点 4 / 6 实测）完成，M2（Qt6 前端）进行中；里程碑见项目仓库 `docs/work/installer-roadmap.md` |
+| ⑦ 品牌化 | ⬜ 未开始 —— 排在功能之后，且受 P5（桌面）阻塞 |
 
-> **第 ④ 步必须在真机验证。** 这是整个项目技术风险最高的一点，应当尽早消除 ——
-> QEMU 里的虚拟显卡证明不了真机上的驱动可用性。
+> **第 ④ 步的第二次验证必须在真机做。** 这是整个项目技术风险最高的一点 ——
+> QEMU 里的虚拟显卡证明不了真机上的驱动可用性，而「Live 里能亮」也不等于「装完能用」。
 
 ### 尚未决定的问题
 
@@ -130,14 +155,13 @@ flowchart TD
 
 | 编号 | 待定 |
 |---|---|
-| P2 | 自用，还是对外发布 |
-| P3 | ISO 形态：在线安装，还是离线全量安装 |
-| P4 | Live 环境形态：全功能桌面，还是开机直弹安装器 |
-| P5 | 桌面环境选型 |
-| P6 | 安装程序方案 |
-| P9 | 发行版本号制度：产物名沿用构建日期，还是改用语义版本 |
+| P5 | 桌面环境选型：**WM 路线已定**（不做完整 DE），niri / Hyprland 二选一 |
+| P10 | 包清单的组织方式：D11 / D12 之后 Live 与装后系统不再共用一份清单，D6 怎么重述 |
+| P11 | 第三方仓库政策：`archlinuxcn` 现在以 `SigLevel = Optional TrustAll` 启用，对外发布前怎么收紧 |
 
-这些问题的候选方案与影响范围，在项目仓库的 `docs/knowledge/06-待定事项.md`。
+其余曾挂着的问题（发行版名称、目标范围、ISO 形态、Live 形态、安装器方案、版本号制度）都已定案，
+结论就是上面 D9–D14 那几条。三个待定项的候选方案与影响范围，
+在项目仓库的 `docs/knowledge/06-待定事项.md`。
 
 ---
 
@@ -168,7 +192,7 @@ MipLinux 把「中文环境」当作一等公民，而不是一个可选的语�
 
 Rolling release. The Chinese environment — mirrors, fonts, input method, locale, documentation — ships as the default rather than as post-install chores. A second goal is NVIDIA drivers working out of the box, using `nvidia-open` against the official `linux` kernel with no third-party repositories involved.
 
-**Status:** early stage, no release yet. The build pipeline works end to end — the project's own profile (now named MipLinux) produces a bootable ISO — and the first layers of the Chinese environment (mirrors, `zh_CN.UTF-8`, CJK font fallback rules, console settings) are merged. NVIDIA drivers, font and input-method packages, the installer, and branding are **not implemented yet**.
+**Status:** early stage, no release yet. The build pipeline works end to end — the project's own profile (now named MipLinux) produces a bootable ISO — and the first layers of the Chinese environment (mirrors, `zh_CN.UTF-8`, CJK font fallback rules, console settings) are merged, with `nvidia-open` in the live package list verified once on real hardware. The installer's skeleton and its GUI-less logic core are implemented and tested (a blank disk installs into a bootable system in QEMU); its Qt6 interface, the post-install half of the NVIDIA verification, the desktop, and branding are **not implemented yet**.
 
 Built with `mkarchiso` inside a `systemd-nspawn` container running clean Arch; verified by booting in QEMU/KVM. Architecture: x86_64.
 
