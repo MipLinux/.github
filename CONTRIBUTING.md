@@ -2,7 +2,17 @@
 
 本文件说明 MipLinux 的协作约定。
 
-项目目前规模很小 —— 两位长期开发者，一位使用 CachyOS，一位使用 Arch。
+项目目前规模很小 —— **三位长期维护者**，三台机器的宿主发行版各不相同，因此脚本一律不写死路径。
+
+| 角色 | GitHub | 宿主机 | 职责 |
+|---|---|---|---|
+| 维护者 | [@LaT-SKY](https://github.com/LaT-SKY) | CachyOS | 审核 PR（`main` 受保护，PR 必须有其审核）、真机验证、对外发布 |
+| 协作者 | [@ieer040126](https://github.com/ieer040126) | Arch Linux | 按指派给自己的 issue 推进；跨 issue 的改动先提新的 issue |
+| 协作者 | [@yks0630](https://github.com/yks0630) | Arch Linux | 同上 |
+
+分工写在项目仓库的 [Issues](https://github.com/MipLinux/MipLinux/issues?q=label%3Atask) 里：**一条工作 = 一个 issue**，
+`assignee` 就是受理人；怎么写（目标 / 实现 / 验收 / 回报 / 依赖）见项目仓库的
+[`docs/work/README.md`](https://github.com/MipLinux/MipLinux/blob/main/docs/work/README.md)，角色到人的对应也在那里维护一份。
 
 ---
 
@@ -115,7 +125,7 @@ PR 描述里请写清三件事：
 | **决策编号** | 已定决策编号为 `Dn`，待定事项编号为 `Pn`，在 `docs/knowledge/` 中展开 |
 | **配置即事实** | 文档与配置冲突时以配置为准，然后修文档 |
 
-如果你发现文档与实际情况不符，**修文档和报告问题都算贡献**。这个项目里文档写错的代价，比代码写错更高 —— 因为两位开发者在两台不同的机器上照着它操作。
+如果你发现文档与实际情况不符，**修文档和报告问题都算贡献**。这个项目里文档写错的代价，比代码写错更高 —— 因为三位维护者在三台不同的机器上照着它操作。
 
 ---
 
