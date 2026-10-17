@@ -26,9 +26,9 @@ MipLinux 基于 Arch Linux，滚动更新，装到硬盘后照常 `pacman -Syu`�
 
 | 层面 | 装完 Arch 之后通常还要 | MipLinux 怎么做 | 做到哪一层 |
 |---|---|---|---|
-| 网络 | 换国内源，否则下载慢到不可用 | 默认国内源（清华 / 阿里 / 中科大等） | 🚧 装后系统继承国内源已实测；安装器里的选源与测速随 M4 |
-| 字体 | 装中文字体，手调 `fontconfig` 的 CJK fallback | 字体层默认配好，中英混排不乱字重 | 🚧 fallback 规则已实测；字体包已进装后清单，装后效果待重测（P10） |
-| 输入法 | 装输入法，处理 Wayland 环境变量与自启动 | `fcitx5` + 中文输入方案（`fcitx5-chinese-addons`） | 🚧 环境变量已实测；包已进装后清单，`fcitx5` 的 profile 配置与自启动未做（P10） |
+| 网络 | 换国内源，否则下载慢到不可用 | 默认国内源（清华 / 阿里 / 中科大等） | 🚧 装后系统继承国内源、Live 的连接后自动换源都已实测；安装器里的选源与测速还在做 |
+| 字体 | 装中文字体，手调 `fontconfig` 的 CJK fallback | 字体层默认配好，中英混排不乱字重 | 🚧 fallback 规则已实测；字体包已进装后清单，装后效果待重测 |
+| 输入法 | 装输入法，处理 Wayland 环境变量与自启动 | `fcitx5` + 中文输入方案（`fcitx5-chinese-addons`） | 🚧 环境变量已实测；包已进装后清单，输入法的 profile 配置与自启动随桌面一起做 |
 | 本地化 | 预生成 `zh_CN.UTF-8`、设时区、配键盘 | 本地化层默认到位 | ✅ `LANG=zh_CN.UTF-8`、键盘布局与时区已实测 |
 | 文档 | 遇到问题找不到中文资料 | 随系统提供中文上手文档 | ⬜ 未开始 |
 
@@ -36,7 +36,7 @@ MipLinux 基于 Arch Linux，滚动更新，装到硬盘后照常 `pacman -Syu`�
 
 ## 进度
 
-截至 **2026-10-10**。**「✅」= 在本机实测过**，不等于用户拿到的成品已经具备该能力。
+截至 **2026-10-17**。**Bingo** = 本机实测可用；**Testing** = 已有实现、还在验证；**Making** = 正在做；**Coming Soon** = 尚未开始。
 
 <!-- BEGIN:progress-table -->
 | 阶段         | 状态          |
@@ -47,19 +47,20 @@ MipLinux 基于 Arch Linux，滚动更新，装到硬盘后照常 `pacman -Syu`�
 | 国内源与中文本地化  | Testing     |
 | NVIDIA 驱动  | Testing     |
 | 安装程序       | Testing     |
-| 桌面环境 / 品牌化 | Coming Soon |
+| 桌面环境 / 品牌化 | Making      |
 <!-- END:progress-table -->
 
-## 还没定的事
+## 路线
 
-| 编号 | 待定 |
+| 方向 | 定下的做法 |
 |---|---|
-| P5 | 桌面：**WM 路线已定**（不做完整桌面环境），niri / Hyprland 二选一 |
-| P10 | 包清单的组织方式：**方向已明** —— 两份清单（Live 精简 / 装后更大）+ 安装器询问应用，细则待定案 |
-| P11 | 第三方仓库政策：`archlinuxcn` 现在以 `SigLevel = Optional TrustAll` 启用，对外发布前怎么收紧 |
-| P12 | 时区名单与显示名的审定规则：**规则已裁**，只差登记成决策编号（要维护者点头） |
+| 桌面 | 走窗口管理器路线，用 Hyprland；配置取自我们维护的 [Caelestia fork](https://github.com/MipLinux/Caelestia) |
+| 包清单 | Live 与装后系统各维护一份；安装器读装后清单 |
+| 第三方仓库 | 装后系统默认启用 `archlinuxcn`，并校验包签名 |
+| 时区 | 名单取运行系统的时区数据；界面不画世界地图，表外的时区照实显示 IANA 名称 |
+| 许可 | 代码与配置 GPL-3.0-or-later，品牌素材 CC BY-SA 4.0 |
 
-背景、候选与已否决的方案见项目仓库的 [06-待定事项](https://github.com/MipLinux/MipLinux/blob/main/docs/knowledge/06-待定事项.md)。
+完整决策表与背景见项目仓库的 [07-决策表](https://github.com/MipLinux/MipLinux/blob/main/docs/knowledge/07-决策表.md)。
 
 ## 参与
 
@@ -75,7 +76,7 @@ MipLinux 基于 Arch Linux，滚动更新，装到硬盘后照常 `pacman -Syu`�
 
 **MipLinux** is an Arch Linux-based rolling release for Chinese-speaking users. Two goals: the Chinese environment (mirrors, fonts, input method, locale, documentation) ships as the default instead of post-install chores, and NVIDIA drivers work out of the box via `nvidia-open` on the official `linux` kernel.
 
-**Status:** early stage, no release yet. A bootable ISO is built from this project's own profile; domestic mirrors, `zh_CN.UTF-8`, CJK font fallback rules and the console font are merged, and the installed system inherits the mirrors (`pacman -Syu` succeeds). The installer's backend installs a bootable system from a blank disk in QEMU (checkpoint 4), and its Electron interface (12 pages) has been walked through in the live ISO — a second full walkthrough was reported but is not yet archived. `nvidia-open` was verified once on real hardware in the live environment. Still open: the installed-system half of the NVIDIA verification, the CJK-font and input-method packages' effect in the installed system, the desktop and branding, and the delay before the installer window appears.
+**Status:** early stage, no release yet. A bootable ISO is built from the project's own profile. Domestic mirrors, `zh_CN.UTF-8`, CJK font fallback and the console font are in place; a freshly installed system inherits the mirrors and `pacman -Syu` succeeds. The installer's backend installs a bootable system from a blank disk in QEMU, and its Electron interface has been walked through in the live ISO. `nvidia-open` was verified once on real hardware in the live environment; the installed-system half is still pending. Still open: the desktop and branding, the input-method profile and autostart, and the installed-system check for the CJK font and input-method packages.
 
 Built with `mkarchiso` inside a `systemd-nspawn` container running clean Arch; verified by booting in QEMU/KVM. Architecture: x86_64. Maintained by long-term maintainers on different host distributions.
 
